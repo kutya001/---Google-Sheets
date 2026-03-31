@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;900&display=swap');
+    :root{
+      --bg:#0f1117;--sur:#181c27;--sur2:#1e2333;--sur3:#242840;
+      --brd:#2d3348;--brd2:#3a4060;
+      --txt:#e8eaf0;--mut:#7a82a0;
+      --blue:#4f7fff;--blue-d:rgba(79,127,255,.12);--blue-g:rgba(79,127,255,.25);
+      --green:#3ecf8e;--green-d:rgba(62,207,142,.10);
+      --red:#ff5a5a;--red-d:rgba(255,90,90,.10);
+      --ora:#ffaa33;--ora-d:rgba(255,170,51,.10);
+      --rsm:8px;--r:12px;
+      --font:'Golos Text',system-ui,sans-serif;--tr:.13s ease;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--font);font-size:13px;line-height:1.5;overflow:hidden}
+    #app{display:flex;flex-direction:column;height:100vh}
+
+    /* topbar */
+    #topbar{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--sur);border-bottom:1px solid var(--brd);flex-shrink:0;flex-wrap:wrap}
+    .logo{width:26px;height:26px;background:linear-gradient(135deg,var(--blue),#6c63ff);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+    .appname{font-size:14px;font-weight:700}
+    .ver{font-size:10px;color:var(--mut);background:var(--sur3);padding:2px 6px;border-radius:999px;border:1px solid var(--brd)}
+    #sheetRow{display:flex;align-items:center;gap:8px;background:var(--sur3);border:1px solid var(--brd);border-radius:var(--rsm);padding:4px 10px}
+    #sheetRow select{background:transparent;border:none;color:var(--txt);font-family:var(--font);font-size:13px;font-weight:600;outline:none;cursor:pointer;max-width:220px}
+    #sheetRow select option{background:var(--sur2)}
+    #metaChip{display:none;font-size:11px;color:var(--mut);background:var(--sur3);border:1px solid var(--brd);border-radius:999px;padding:3px 9px}
+    #metaChip b{color:var(--txt)}
+    .spacer{flex:1}
+
+    /* status */
+    #statusBar{display:none;align-items:center;gap:8px;padding:6px 14px;font-size:12px;font-weight:500;flex-shrink:0;border-bottom:1px solid transparent}
+    #statusBar.info{display:flex;background:var(--blue-d);border-color:rgba(79,127,255,.2);color:#8ab4ff}
+    #statusBar.ok{display:flex;background:var(--green-d);border-color:rgba(62,207,142,.2);color:var(--green)}
+    #statusBar.err{display:flex;background:var(--red-d);border-color:rgba(255,90,90,.2);color:var(--red)}
+    .sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .info .sdot{background:var(--blue)}.ok .sdot{background:var(--green)}.err .sdot{background:var(--red)}
+
+    /* body */
+    #body{display:flex;flex:1;min-height:0;overflow:hidden}
+
+    /* sidebar */
+    #sidebar{width:345px;min-width:260px;background:var(--sur);border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+    .tabs{display:flex;border-bottom:1px solid var(--brd)}
+    .tab{flex:1;padding:9px 4px;font-size:11px;font-weight:700;color:var(--mut);text-align:center;cursor:pointer;border-bottom:2px solid transparent;transition:color var(--tr),border-color var(--tr);white-space:nowrap}
+    .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+    .tab:hover:not(.active){color:var(--txt)}
+    .tp{display:none;flex:1;overflow-y:auto;padding:12px;flex-direction:column;gap:11px}
+    .tp.active{display:flex}
+
+    /* form */
+    label{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+    input,select,textarea{background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rsm);color:var(--txt);font-family:var(--font);font-size:13px;padding:7px 9px;outline:none;transition:border-color var(--tr),box-shadow var(--tr);width:100%}
+    input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-d)}
+    select option{background:var(--sur2)}
+    textarea{resize:vertical;min-height:60px}
+    .field{display:flex;flex-direction:column}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    .irow{display:flex;gap:7px;align-items:flex-end}
+    .irow>.field{flex:1}
+    .div{height:1px;background:var(--brd);margin:2px 0}
+    .sl{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+    .note{font-size:11px;color:var(--mut);line-height:1.4}
+
+    /* buttons */
+    button{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 13px;border-radius:var(--rsm);border:1px solid transparent;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all var(--tr);white-space:nowrap;flex-shrink:0;position:relative;overflow:hidden}
+    button:disabled{opacity:.4;cursor:not-allowed}
+    .bp{background:var(--blue);color:#fff;box-shadow:0 3px 12px var(--blue-g)}
+    .bp:not(:disabled):hover{background:#6590ff;transform:translateY(-1px)}
+    .bs{background:var(--sur3);color:var(--txt);border-color:var(--brd)}
+    .bs:not(:disabled):hover{border-color:var(--brd2)}
+    .bg2{background:var(--green);color:#0a2e1e;box-shadow:0 3px 12px rgba(62,207,142,.25)}
+    .bg2:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px)}
+    .br{background:transparent;color:var(--red);border-color:rgba(255,90,90,.3)}
+    .br:not(:disabled):hover{background:var(--red-d);border-color:var(--red)}
+    .bgh{background:transparent;color:var(--blue);border-color:rgba(79,127,255,.3)}
+    .bgh:not(:disabled):hover{background:var(--blue-d);border-color:var(--blue)}
+    .bsm{padding:5px 9px;font-size:11px}
+
+    button.ld{pointer-events:none;color:transparent!important}
+    button.ld::after{content:'';position:absolute;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+    /* filter cards */
+    .fc{background:var(--sur2);border:1px solid var(--brd);border-radius:var(--r);padding:10px;animation:fi .15s ease;display:flex;flex-direction:column;gap:7px}
+    @keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+    .fh{display:flex;align-items:center;justify-content:space-between}
+    .fnum{font-size:10px;font-weight:700;color:var(--blue);background:var(--blue-d);padding:2px 7px;border-radius:999px}
+
+    /* suggestions */
+    .sbox{display:none;background:var(--sur3);border:1px solid var(--brd);border-radius:var(--rsm);max-height:110px;overflow-y:auto;margin-top:4px}
+    .sug{padding:6px 9px;cursor:pointer;font-size:12px;border-bottom:1px solid var(--brd);transition:background var(--tr)}
+    .sug:last-child{border-bottom:none}.sug:hover{background:var(--sur2)}
+    .chips{display:flex;flex-wrap:wrap;gap:4px;min-height:18px;margin-top:4px}
+    .chip{display:inline-flex;align-items:center;gap:4px;background:var(--blue-d);color:#8ab4ff;border:1px solid rgba(79,127,255,.25);border-radius:999px;padding:2px 7px;font-size:11px;font-weight:600}
+    .cx{cursor:pointer;opacity:.7;font-size:12px}.cx:hover{opacity:1}
+    .ck{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--mut)}
+    .ck input[type=checkbox]{width:13px;height:13px;accent-color:var(--blue);cursor:pointer}
+
+    /* saved items */
+    .si{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--sur2);border:1px solid var(--brd);border-radius:var(--rsm)}
+    .sn{flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+    /* main */
+    #main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+    /* preview toolbar */
+    #pvtop{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--sur);border-bottom:1px solid var(--brd);flex-shrink:0;flex-wrap:wrap}
+    .pstat{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:var(--rsm);font-size:12px;font-weight:700}
+    .pstat.red{background:var(--red-d);color:var(--red);border:1px solid rgba(255,90,90,.2)}
+    .pstat.grn{background:var(--green-d);color:var(--green);border:1px solid rgba(62,207,142,.2)}
+    .pdot{width:6px;height:6px;border-radius:50%}
+    .pstat.red .pdot{background:var(--red)}.pstat.grn .pdot{background:var(--green)}
+    .vt{display:flex;border:1px solid var(--brd);border-radius:var(--rsm);overflow:hidden}
+    .vtb{padding:4px 10px;font-size:11px;font-weight:700;color:var(--mut);cursor:pointer;background:var(--sur2);transition:all var(--tr)}
+    .vtb:not(:last-child){border-right:1px solid var(--brd)}
+    .vtb.active{background:var(--sur3);color:var(--txt)}
+    .pg{display:flex;align-items:center;gap:5px}
+    .pi{font-size:11px;color:var(--mut);font-weight:600;min-width:55px;text-align:center}
+
+    /* split/single */
+    #split{display:grid;grid-template-columns:1fr 1fr;flex:1;min-height:0;overflow:hidden}
+    #single{display:none;flex:1;flex-direction:column;min-height:0}
+    .pane{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+    .pane:first-child{border-right:1px solid var(--brd)}
+    .ph{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 11px;background:var(--sur);border-bottom:1px solid var(--brd);flex-shrink:0}
+    .pt{font-size:11px;font-weight:700}
+    .tw{flex:1;overflow:auto}
+
+    /* table */
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th{position:sticky;top:0;z-index:3;background:var(--sur2);color:var(--mut);font-weight:700;text-transform:uppercase;font-size:10px;letter-spacing:.3px;padding:7px 9px;border-bottom:2px solid var(--brd);white-space:nowrap;text-align:left}
+    td{padding:6px 9px;border-bottom:1px solid var(--brd);white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;vertical-align:top}
+    tr:hover td{background:var(--sur)}
+    tr.ar td:first-child{border-left:3px solid var(--red)}
+    tr.ar{background:rgba(255,90,90,.03)}
+    tr.rr td:first-child{border-left:3px solid var(--green)}
+    tr.rr{background:rgba(62,207,142,.03)}
+    .rn{color:var(--mut);font-size:10px;font-weight:600;width:44px}
+    .es{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:50px 20px;color:var(--mut)}
+    .es .ei{font-size:28px;opacity:.35}.es .em{font-size:12px}
+
+    /* confirm */
+    #confirmBar{background:var(--sur);border-top:1px solid var(--brd);padding:10px 14px;display:flex;align-items:flex-end;gap:10px;flex-shrink:0;flex-wrap:wrap}
+    .cw{display:flex;gap:10px;flex:1;flex-wrap:wrap;align-items:flex-end}
+    .cf{display:flex;flex-direction:column;gap:3px}
+    .cf.grow{flex:1;min-width:160px}
+    .dh{font-size:11px;color:var(--ora);background:var(--ora-d);border:1px solid rgba(255,170,51,.2);border-radius:var(--rsm);padding:5px 9px;align-self:flex-start;max-width:220px;line-height:1.4}
+
+    /* terminal */
+    #term{background:var(--sur);border-top:1px solid var(--brd);flex-shrink:0;display:flex;flex-direction:column;transition:height .2s ease;height:32px;overflow:hidden}
+    #term.open{height:210px}
+    #termHead{display:flex;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;user-select:none;flex-shrink:0}
+    .tdot{width:7px;height:7px;border-radius:50%;background:var(--mut)}
+    .tdot.busy{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .thTitle{font-size:11px;font-weight:700;color:var(--mut);flex:1}
+    .thToggle{font-size:10px;color:var(--mut);padding:2px 6px;background:var(--sur3);border-radius:4px;border:1px solid var(--brd)}
+    #termBody{flex:1;overflow-y:auto;padding:6px 12px;font-family:'Consolas','Courier New',monospace;font-size:11px;line-height:1.6}
+    .tl{white-space:pre-wrap;word-break:break-all}
+    .tl.ti{color:var(--mut)}.tl.tok{color:var(--green)}.tl.ter{color:var(--red)}.tl.tinf{color:#8ab4ff}.tl.twrn{color:var(--ora)}
+
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:99px}
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="logo">📦</div>
+    <div class="appname">Архивация</div>
+    <div class="ver">v4.3</div>
+    <div id="sheetRow">
+      <span style="font-size:10px;color:var(--mut);font-weight:700">ЛИСТ</span>
+      <select id="sheetSel"></select>
+      <button class="bs bsm" id="loadBtn" onclick="loadMetadata()">↻ Загрузить</button>
+    </div>
+    <div id="metaChip">Строк: <b id="mRows">—</b> &nbsp;|&nbsp; Столбцов: <b id="mCols">—</b></div>
+    <div class="spacer"></div>
+    <button class="bs bsm" onclick="toggleFs()" title="Полный экран">⛶</button>
+  </div>
+
+  <!-- STATUS -->
+  <div id="statusBar"><div class="sdot"></div><span id="statusTxt"></span></div>
+
+  <!-- BODY -->
+  <div id="body">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="tabs">
+        <div class="tab active" onclick="stab(this,'tf')">🔍 Фильтры</div>
+        <div class="tab" onclick="stab(this,'ts')">⚙️ Настройки</div>
+        <div class="tab" onclick="stab(this,'tv')">💾 Шаблоны</div>
+      </div>
+
+      <!-- FILTERS TAB -->
+      <div id="tf" class="tp active">
+        <div>
+          <div class="sl" style="margin-bottom:6px">Режим и логика</div>
+          <div class="g2">
+            <div class="field"><label>Объединение</label>
+              <select id="combineMode"><option value="AND">И (AND)</option><option value="OR">ИЛИ (OR)</option></select>
+            </div>
+            <div class="field"><label>Архивировать</label>
+              <select id="archiveMode"><option value="MATCH">Найденные</option><option value="INVERT">Остальные</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="div"></div>
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div class="sl">Фильтры</div>
+            <button class="bgh bsm" onclick="addFilter()">+ Добавить</button>
+          </div>
+          <div id="fc" style="display:flex;flex-direction:column;gap:8px"></div>
+        </div>
+        <div class="div"></div>
+        <div style="display:flex;gap:7px">
+          <button class="bp" id="prevBtn" onclick="doPreview()" style="flex:1">🔍 Предпросмотр</button>
+          <button class="bs" onclick="resetPreview()" title="Сбросить">✕</button>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="ts" class="tp">
+        <div class="field"><label>Строк на странице</label>
+          <select id="pageSize">
+            <option value="25">25</option><option value="50" selected>50</option>
+            <option value="100">100</option><option value="200">200</option>
+          </select>
+        </div>
+        <div class="div"></div>
+        <div class="note"><b style="color:var(--txt)">v4.3</b> — PropertiesService для кэша. Полный лог каждого шага в терминале.</div>
+      </div>
+
+      <!-- SAVED TAB -->
+      <div id="tv" class="tp">
+        <div>
+          <div class="sl" style="margin-bottom:6px">Наборы фильтров (личные)</div>
+          <div class="irow" style="margin-bottom:8px">
+            <div class="field"><input id="fsName" placeholder="Название набора"></div>
+            <button class="bgh bsm" onclick="saveFs()">Сохранить</button>
+          </div>
+          <div id="fsList" style="display:flex;flex-direction:column;gap:5px"></div>
+        </div>
+        <div class="div"></div>
+        <div>
+          <div class="sl" style="margin-bottom:6px">Шаблоны (общие)</div>
+          <div class="irow" style="margin-bottom:8px">
+            <div class="field"><input id="tmName" placeholder="Название шаблона"></div>
+            <button class="bgh bsm" onclick="saveTm()">Сохранить</button>
+          </div>
+          <div id="tmList" style="display:flex;flex-direction:column;gap:5px"></div>
+        </div>
+      </div>
+    </div><!-- /sidebar -->
+
+    <!-- MAIN -->
+    <div id="main">
+      <!-- PREVIEW TOPBAR -->
+      <div id="pvtop">
+        <div class="pstat red"><div class="pdot"></div><span id="archLbl">В архив: 0</span></div>
+        <div class="pstat grn"><div class="pdot"></div><span id="remLbl">Остаётся: 0</span></div>
+        <div class="spacer"></div>
+        <div class="vt">
+          <div class="vtb active" onclick="setView('split',this)">Оба</div>
+          <div class="vtb" onclick="setView('archive',this)">Архив</div>
+          <div class="vtb" onclick="setView('remain',this)">Остаток</div>
+        </div>
+      </div>
+
+      <!-- SPLIT VIEW -->
+      <div id="split">
+        <div class="pane">
+          <div class="ph">
+            <div class="pt" style="color:var(--red)">🗂 Уходят в архив</div>
+            <div class="pg">
+              <button class="bs bsm" id="aPrev" onclick="cpage('archive',-1)" disabled>←</button>
+              <span class="pi" id="aPI">1 / 1</span>
+              <button class="bs bsm" id="aNext" onclick="cpage('archive',1)" disabled>→</button>
+            </div>
+          </div>
+          <div class="tw" id="archPrev"><div class="es"><div class="ei">🗂</div><div class="em">Нажмите «Предпросмотр»</div></div></div>
+        </div>
+        <div class="pane">
+          <div class="ph">
+            <div class="pt" style="color:var(--green)">✅ Остаются</div>
+            <div class="pg">
+              <button class="bs bsm" id="rPrev" onclick="cpage('remain',-1)" disabled>←</button>
+              <span class="pi" id="rPI">1 / 1</span>
+              <button class="bs bsm" id="rNext" onclick="cpage('remain',1)" disabled>→</button>
+            </div>
+          </div>
+          <div class="tw" id="remPrev"><div class="es"><div class="ei">✅</div><div class="em">Нажмите «Предпросмотр»</div></div></div>
+        </div>
+      </div>
+
+      <!-- SINGLE VIEW -->
+      <div id="single">
+        <div class="pane" style="flex:1">
+          <div class="ph">
+            <div class="pt" id="sTitle"></div>
+            <div class="pg">
+              <button class="bs bsm" id="sPrev" onclick="cSingle(-1)" disabled>←</button>
+              <span class="pi" id="sPI">1 / 1</span>
+              <button class="bs bsm" id="sNext" onclick="cSingle(1)" disabled>→</button>
+            </div>
+          </div>
+          <div class="tw" id="singlePrev"><div class="es"><div class="ei">🔍</div><div class="em">Нажмите «Предпросмотр»</div></div></div>
+        </div>
+      </div>
+
+      <!-- CONFIRM -->
+      <div id="confirmBar">
+        <div class="dh">⚠️ Безвозвратно перемещает строки. Требуется комментарий и подтверждение.</div>
+        <div class="cw">
+          <div class="cf grow"><label>Комментарий</label><input id="archComment" placeholder="Причина архивации..."></div>
+          <div class="cf"><label>Введите ARCHIVE</label><input id="archConfirm" placeholder="ARCHIVE" style="width:120px"></div>
+        </div>
+        <button class="bg2" id="archBtn" onclick="doArchive()" disabled style="padding:9px 18px">📦 Архивировать</button>
+      </div>
+
+      <!-- TERMINAL -->
+      <div id="term">
+        <div id="termHead" onclick="toggleTerm()">
+          <div class="tdot" id="tdot"></div>
+          <div class="thTitle">Терминал операций</div>
+          <div class="thToggle" id="thToggle">▲ Развернуть</div>
+        </div>
+        <div id="termBody"></div>
+      </div>
+    </div><!-- /main -->
+  </div><!-- /body -->
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   ГЛОБАЛЬНЫЙ ПЕРЕХВАТЧИК ОШИБОК JS
+   Ловит любую необработанную ошибку и показывает
+   её в терминале и статус-баре
+══════════════════════════════════════════════ */
+window.onerror = function(msg, src, line, col, err) {
+  var full = 'JS ERROR: ' + msg + ' (line ' + line + ')';
+  tlog(full, 'ter');
+  setStatus(full, 'err');
+  termOpen || toggleTerm();
+  termBusy(false);
+  // Разблокируем все кнопки
+  ['loadBtn','prevBtn','archBtn'].forEach(function(id){
+    var b = document.getElementById(id);
+    if (b) { b.classList.remove('ld'); b.disabled = (id === 'archBtn'); }
+  });
+  return false;
+};
+
+/* ── STATE ── */
+var meta = null;
+var view = 'split';
+var ps = { sz:50, aC:0, rC:0, aP:1, rP:1, sT:'archive' };
+var filterCnt = 0;
+var termOpen = false;
+
+var OPS = {
+  text:[
+    {v:'equals',l:'Равно'},{v:'not_equals',l:'Не равно'},
+    {v:'contains',l:'Содержит'},{v:'not_contains',l:'Не содержит'},
+    {v:'starts_with',l:'Начинается с'},{v:'ends_with',l:'Заканчивается на'},
+    {v:'in_list',l:'В списке'},{v:'not_in_list',l:'Не в списке'},
+    {v:'is_empty',l:'Пусто'},{v:'is_not_empty',l:'Не пусто'}
+  ],
+  number:[
+    {v:'equals',l:'='},{v:'not_equals',l:'≠'},{v:'gt',l:'>'},{v:'gte',l:'≥'},
+    {v:'lt',l:'<'},{v:'lte',l:'≤'},{v:'between',l:'Между'},
+    {v:'in_list',l:'В списке'},{v:'not_in_list',l:'Не в списке'},
+    {v:'is_empty',l:'Пусто'},{v:'is_not_empty',l:'Не пусто'}
+  ],
+  date:[
+    {v:'on',l:'Дата ='},{v:'not_equals',l:'Дата ≠'},{v:'before',l:'До'},
+    {v:'after',l:'После'},{v:'between',l:'Между'},
+    {v:'is_empty',l:'Пусто'},{v:'is_not_empty',l:'Не пусто'}
+  ],
+  boolean:[
+    {v:'equals',l:'Равно'},{v:'not_equals',l:'Не равно'},
+    {v:'is_empty',l:'Пусто'},{v:'is_not_empty',l:'Не пусто'}
+  ]
+};
+
+window.onload = function() {
+  tlog('=== Архиватор v4.3 запущен ===', 'tinf');
+  tlog('Загрузка списка листов...', 'ti');
+  loadSheets();
+  loadSaved();
+};
+
+/* ── TERMINAL ── */
+function tlog(msg, cls) {
+  var b = document.getElementById('termBody');
+  var d = document.createElement('div');
+  d.className = 'tl ' + (cls || 'ti');
+  d.textContent = msg;
+  b.appendChild(d);
+  b.scrollTop = b.scrollHeight;
+}
+
+/* Принимает строку лога из GAS (может быть undefined или строкой) */
+function tlogGAS(logText) {
+  if (!logText) return;
+  var lines = String(logText).split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    var l = lines[i].trim();
+    if (!l) continue;
+    var cls = 'ti';
+    var lu = l.toUpperCase();
+    if (lu.indexOf('ERROR') !== -1) cls = 'ter';
+    else if (lu.indexOf('DONE') !== -1 || lu.indexOf('OK') !== -1 || lu.indexOf('SAVED') !== -1 || lu.indexOf('WRITTEN') !== -1) cls = 'tok';
+    else if (lu.indexOf('START') !== -1 || lu.indexOf('CHUNK') !== -1 || lu.indexOf('READ') !== -1 || lu.indexOf('FETCH') !== -1) cls = 'tinf';
+    tlog(l, cls);
+  }
+}
+
+function termBusy(v) {
+  var d = document.getElementById('tdot');
+  if (v) d.classList.add('busy'); else d.classList.remove('busy');
+}
+
+function toggleTerm() {
+  termOpen = !termOpen;
+  document.getElementById('term').classList.toggle('open', termOpen);
+  document.getElementById('thToggle').textContent = termOpen ? '▼ Свернуть' : '▲ Развернуть';
+}
+
+/* ── STATUS ── */
+function setStatus(msg, type) {
+  var b = document.getElementById('statusBar');
+  b.className = type || '';
+  document.getElementById('statusTxt').textContent = msg;
+}
+function clrStatus() { document.getElementById('statusBar').className = ''; }
+
+/* ── FULLSCREEN ── */
+function toggleFs() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen && document.exitFullscreen();
+  }
+}
+
+/* ── SIDEBAR TABS ── */
+function stab(el, id) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tp').forEach(function(p) { p.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+/* ── VIEW SWITCH ── */
+function setView(v, el) {
+  view = v;
+  document.querySelectorAll('.vtb').forEach(function(b) { b.classList.remove('active'); });
+  el.classList.add('active');
+  var sp = document.getElementById('split');
+  var si = document.getElementById('single');
+  if (v === 'split') {
+    sp.style.display = 'grid'; si.style.display = 'none';
+  } else {
+    sp.style.display = 'none'; si.style.display = 'flex';
+    ps.sT = v; syncSingle(v);
+  }
+}
+
+function syncSingle(tgt) {
+  var isA = tgt === 'archive';
+  var t = document.getElementById('sTitle');
+  t.textContent = isA ? '🗂 Уходят в архив' : '✅ Остаются';
+  t.style.color = isA ? 'var(--red)' : 'var(--green)';
+  document.getElementById('singlePrev').innerHTML =
+    document.getElementById(isA ? 'archPrev' : 'remPrev').innerHTML;
+  var p = isA ? ps.aP : ps.rP;
+  var c = isA ? ps.aC : ps.rC;
+  var tot = Math.max(1, Math.ceil(c / ps.sz));
+  document.getElementById('sPI').textContent = p + ' / ' + tot;
+  document.getElementById('sPrev').disabled = p <= 1;
+  document.getElementById('sNext').disabled = p >= tot;
+}
+
+function cSingle(d) { cpage(ps.sT, d, true); }
+
+/* ── BUTTON HELPER ── */
+function setBtn(id, busy) {
+  var b = document.getElementById(id);
+  if (!b) return;
+  b.classList.toggle('ld', busy);
+  b.disabled = busy;
+}
+
+/* ══════════════════════════════════════════════
+   LOADERS — все вызовы GAS завёрнуты в try/catch
+   и логируют полученный ответ перед обработкой
+══════════════════════════════════════════════ */
+
+function loadSheets() {
+  tlog('→ getAvailableSheets()', 'tinf');
+  termBusy(true);
+  setStatus('Загрузка листов...', 'info');
+
+  google.script.run
+    .withSuccessHandler(function(raw) {
+      try {
+        termBusy(false);
+        tlog('← ответ получен, тип: ' + typeof raw, 'ti');
+
+        /* совместимость: старый код возвращал массив [{name},...],
+           новый возвращает {sheets:[...], log:''} */
+        var sheets, logText;
+        if (Array.isArray(raw)) {
+          sheets = raw;
+          logText = '';
+          tlog('! Старый формат ответа (массив) — Code.js возможно не обновлён', 'twrn');
+        } else {
+          sheets = raw.sheets || [];
+          logText = raw.log || '';
+        }
+        tlogGAS(logText);
+
+        var sel = document.getElementById('sheetSel');
+        sel.innerHTML = '';
+        if (!sheets.length) {
+          sel.innerHTML = '<option value="">Нет листов</option>';
+          setStatus('Нет доступных листов.', 'err'); return;
+        }
+        sheets.forEach(function(it) {
+          var o = document.createElement('option');
+          o.value = o.textContent = it.name;
+          sel.appendChild(o);
+        });
+        tlog('✓ Листов найдено: ' + sheets.length, 'tok');
+        clrStatus();
+      } catch(e) {
+        termBusy(false);
+        tlog('✗ JS ошибка в loadSheets handler: ' + e.message, 'ter');
+        setStatus('JS ошибка: ' + e.message, 'err');
+      }
+    })
+    .withFailureHandler(function(err) {
+      termBusy(false);
+      var msg = errMsg(err);
+      tlog('✗ GAS ERROR getAvailableSheets: ' + msg, 'ter');
+      setStatus('Ошибка GAS: ' + msg, 'err');
+    })
+    .getAvailableSheets();
+}
+
+function loadMetadata() {
+  var sn = document.getElementById('sheetSel').value;
+  if (!sn) { setStatus('Выберите лист.', 'err'); return; }
+
+  tlog('', 'ti');
+  tlog('→ getSheetMetadataV31("' + sn + '")', 'tinf');
+  termBusy(true);
+  setBtn('loadBtn', true);
+  setStatus('Загрузка структуры листа...', 'info');
+  if (!termOpen) toggleTerm();
+
+  google.script.run
+    .withSuccessHandler(function(raw) {
+      try {
+        termBusy(false); setBtn('loadBtn', false);
+        tlog('← ответ получен, тип: ' + typeof raw, 'ti');
+
+        /* совместимость: старый код возвращал объект напрямую без .log */
+        var res, logText;
+        if (raw && raw.sheetName !== undefined && raw.log === undefined) {
+          // Старый формат — объект метаданных напрямую
+          res = raw; logText = '';
+          tlog('! Старый формат ответа — Code.js возможно не обновлён', 'twrn');
+        } else {
+          res = raw; logText = raw.log || '';
+        }
+        tlogGAS(logText);
+
+        if (!res || !res.headers) {
+          tlog('✗ Нет поля headers в ответе! raw=' + JSON.stringify(raw).substr(0,200), 'ter');
+          setStatus('Ошибка: нет данных в ответе', 'err'); return;
+        }
+
+        meta = res;
+        document.getElementById('metaChip').style.display = 'block';
+        document.getElementById('mRows').textContent = res.totalRows;
+        document.getElementById('mCols').textContent = res.totalColumns;
+
+        var fc = document.getElementById('fc');
+        if (!fc.children.length) addFilter();
+        else reloadCols();
+
+        resetPreview(false);
+        setStatus('Лист "' + res.sheetName + '" загружен (' + res.totalRows + ' строк, ' + res.totalColumns + ' столбцов).', 'ok');
+        tlog('✓ Метаданные OK: ' + res.totalRows + ' строк, ' + res.totalColumns + ' столбцов', 'tok');
+      } catch(e) {
+        termBusy(false); setBtn('loadBtn', false);
+        tlog('✗ JS ошибка в loadMetadata handler: ' + e.message + '\n  Stack: ' + (e.stack||''), 'ter');
+        setStatus('JS ошибка: ' + e.message, 'err');
+      }
+    })
+    .withFailureHandler(function(err) {
+      termBusy(false); setBtn('loadBtn', false);
+      var msg = errMsg(err);
+      tlog('✗ GAS ERROR getSheetMetadata: ' + msg, 'ter');
+      setStatus('Ошибка GAS: ' + msg, 'err');
+    })
+    .getSheetMetadataV31(sn);
+}
+
+function loadSaved() {
+  google.script.run
+    .withSuccessHandler(function(raw) {
+      try {
+        var items = Array.isArray(raw) ? raw : (raw && raw.items ? raw.items : []);
+        renderSaved('fsList', items, 'fs');
+      } catch(e) { tlog('✗ JS ошибка renderFilterSets: ' + e.message, 'ter'); }
+    })
+    .withFailureHandler(function(e) { tlog('✗ getSavedFilterSets: ' + errMsg(e), 'ter'); })
+    .getSavedFilterSetsV31();
+
+  google.script.run
+    .withSuccessHandler(function(raw) {
+      try {
+        var items = Array.isArray(raw) ? raw : (raw && raw.items ? raw.items : []);
+        renderSaved('tmList', items, 'tm');
+      } catch(e) { tlog('✗ JS ошибка renderTemplates: ' + e.message, 'ter'); }
+    })
+    .withFailureHandler(function(e) { tlog('✗ getArchiveTemplates: ' + errMsg(e), 'ter'); })
+    .getArchiveTemplatesV31();
+}
+
+/* ── FILTERS ── */
+function addFilter(pf) {
+  if (!meta) { setStatus('Сначала загрузите лист.', 'err'); return; }
+  filterCnt++;
+  var id = filterCnt;
+  var card = document.createElement('div');
+  card.className = 'fc';
+  card.dataset.id = id;
+  card.innerHTML =
+    '<div class="fh"><span class="fnum">Фильтр ' + id + '</span>' +
+    '<button class="br bsm" onclick="this.closest(\'.fc\').remove();resetPreview(false)">Удалить</button></div>' +
+    '<div class="field"><label>Поиск столбца</label><input class="csearch" placeholder="Найти..."></div>' +
+    '<div class="g2">' +
+      '<div class="field"><label>Столбец</label><select class="fcol"></select></div>' +
+      '<div class="field"><label>Оператор</label><select class="fop"></select></div>' +
+    '</div>' +
+    '<div class="field fv1r"><label>Значение</label><input class="fv1" placeholder="Значение"></div>' +
+    '<div class="field fv2r" style="display:none"><label>Значение 2</label><input class="fv2" placeholder="Значение 2"></div>' +
+    '<div class="ck"><input type="checkbox" class="fexcl"><span>Исключить пустые</span></div>' +
+    '<div class="funiq" style="display:none">' +
+      '<div class="irow" style="margin-top:5px">' +
+        '<div class="field"><label>Выбор из списка</label><input class="fusearch" placeholder="Поиск..."></div>' +
+        '<button class="bs bsm" onclick="loadUniq(this.closest(\'.fc\'))">↓</button>' +
+      '</div>' +
+      '<div class="sbox"></div><div class="chips"></div>' +
+    '</div>' +
+    '<div class="note fn" style="margin-top:3px"></div>';
+
+  document.getElementById('fc').appendChild(card);
+  initCard(card, pf);
+  resetPreview(false);
+}
+
+function initCard(card, pf) {
+  card._sv = Array.isArray(pf && pf.selectedValues) ? [].concat(pf.selectedValues) : [];
+  fillCols(card.querySelector('.fcol'), '');
+  if (pf && typeof pf.columnIndex === 'number') {
+    var s = card.querySelector('.fcol');
+    if ([].slice.call(s.options).some(function(o) { return Number(o.value) === pf.columnIndex; }))
+      s.value = String(pf.columnIndex);
+  }
+  card.querySelector('.csearch').addEventListener('input', deb(function() {
+    fillCols(card.querySelector('.fcol'), card.querySelector('.csearch').value);
+    updCard(card);
+  }, 100));
+  card.querySelector('.fcol').addEventListener('change', function() {
+    card._sv = []; renderChips(card); hideSug(card); updCard(card);
+  });
+  card.querySelector('.fop').addEventListener('change', function() { updCard(card, null, true); });
+  card.querySelector('.fusearch').addEventListener('input', deb(function() { loadUniq(card); }, 200));
+  card.querySelector('.fexcl').checked = !!(pf && pf.excludeBlanks);
+  updCard(card, pf);
+  renderChips(card);
+}
+
+function reloadCols() {
+  document.querySelectorAll('.fc').forEach(function(card) {
+    var sel = card.querySelector('.fcol');
+    var prev = sel.value;
+    fillCols(sel, card.querySelector('.csearch').value || '');
+    if ([].slice.call(sel.options).some(function(o) { return o.value === prev; })) sel.value = prev;
+    updCard(card);
+  });
+}
+
+function fillCols(sel, q) {
+  var qn = (q || '').trim().toLowerCase();
+  var prev = sel.value;
+  sel.innerHTML = '';
+  meta.headers.forEach(function(h, i) {
+    var tp = meta.columnTypes[i] || 'text';
+    var lbl = (h || '(без названия)') + ' [' + tp + ']';
+    if (!qn || lbl.toLowerCase().indexOf(qn) !== -1) {
+      var o = document.createElement('option');
+      o.value = i; o.textContent = lbl;
+      sel.appendChild(o);
+    }
+  });
+  if ([].slice.call(sel.options).some(function(o) { return o.value === prev; })) sel.value = prev;
+}
+
+function updCard(card, pf, keepVals) {
+  var sel = card.querySelector('.fcol');
+  var opSel = card.querySelector('.fop');
+  if (!sel.options.length) { opSel.innerHTML = ''; card.querySelector('.fn').textContent = 'Столбцы не найдены.'; return; }
+  var ci = Number(sel.value);
+  var tp = meta.columnTypes[ci] || 'text';
+  var prevOp = (pf && pf.operator) || opSel.value;
+  opSel.innerHTML = '';
+  (OPS[tp] || OPS.text).forEach(function(op) {
+    var o = document.createElement('option'); o.value = op.v; o.textContent = op.l; opSel.appendChild(o);
+  });
+  if (prevOp && [].slice.call(opSel.options).some(function(o) { return o.value === prevOp; })) opSel.value = prevOp;
+  renderVals(card, tp, opSel.value, keepVals ? null : pf);
+  card.querySelector('.fn').textContent = 'Тип: ' + tp;
+}
+
+function renderVals(card, tp, op, pf) {
+  var ov1 = (card.querySelector('.fv1') && card.querySelector('.fv1').value) || (pf && pf.value1) || '';
+  var ov2 = (card.querySelector('.fv2') && card.querySelector('.fv2').value) || (pf && pf.value2) || '';
+  var r1 = card.querySelector('.fv1r');
+  var r2 = card.querySelector('.fv2r');
+  var nv1;
+  if (tp === 'boolean') {
+    nv1 = document.createElement('select'); nv1.className = 'fv1';
+    nv1.innerHTML = '<option value="true">TRUE / Да</option><option value="false">FALSE / Нет</option>';
+  } else {
+    nv1 = document.createElement('input'); nv1.className = 'fv1';
+    nv1.type = tp === 'date' ? 'date' : tp === 'number' ? 'number' : 'text';
+    nv1.placeholder = 'Значение';
+    if (tp === 'number') nv1.step = 'any';
+  }
+  var nv2 = document.createElement('input'); nv2.className = 'fv2';
+  nv2.type = tp === 'date' ? 'date' : tp === 'number' ? 'number' : 'text';
+  nv2.placeholder = 'Значение 2';
+  if (tp === 'number') nv2.step = 'any';
+  card.querySelector('.fv1').replaceWith(nv1);
+  card.querySelector('.fv2').replaceWith(nv2);
+  if (ov1) nv1.value = ov1;
+  if (ov2) nv2.value = ov2;
+  var isM = op === 'in_list' || op === 'not_in_list';
+  var isE = op === 'is_empty' || op === 'is_not_empty';
+  r1.style.display = (isE || isM) ? 'none' : 'flex';
+  r2.style.display = op === 'between' ? 'flex' : 'none';
+  card.querySelector('.funiq').style.display = isM ? 'block' : 'none';
+  if (!isM) hideSug(card);
+}
+
+function loadUniq(card) {
+  if (!meta) return;
+  var sn = document.getElementById('sheetSel').value;
+  var ci = Number(card.querySelector('.fcol').value);
+  var q = card.querySelector('.fusearch').value || '';
+  var sb = card.querySelector('.sbox');
+  sb.style.display = 'block';
+  sb.innerHTML = '<div class="sug" style="color:var(--mut)">Загрузка...</div>';
+
+  google.script.run
+    .withSuccessHandler(function(raw) {
+      try {
+        var values = Array.isArray(raw) ? raw : (raw && raw.values ? raw.values : []);
+        sb.innerHTML = '';
+        if (!values.length) { sb.innerHTML = '<div class="sug" style="color:var(--mut)">Ничего</div>'; return; }
+        values.forEach(function(v) {
+          var el = document.createElement('div'); el.className = 'sug'; el.textContent = v;
+          el.onclick = function() { if (card._sv.indexOf(v) === -1) card._sv.push(v); renderChips(card); };
+          sb.appendChild(el);
+        });
+        sb.style.display = 'block';
+      } catch(e) { sb.innerHTML = '<div class="sug" style="color:var(--red)">JS ошибка: ' + e.message + '</div>'; }
+    })
+    .withFailureHandler(function(err) { sb.innerHTML = '<div class="sug" style="color:var(--red)">Ошибка: ' + errMsg(err) + '</div>'; })
+    .getColumnUniqueValuesV31({ sheetName: sn, columnIndex: ci, searchTerm: q, limit: 300 });
+}
+
+function hideSug(card) { var b = card.querySelector('.sbox'); if (b) { b.innerHTML = ''; b.style.display = 'none'; } }
+function renderChips(card) {
+  var w = card.querySelector('.chips'); w.innerHTML = '';
+  (card._sv || []).forEach(function(v) {
+    var c = document.createElement('div'); c.className = 'chip';
+    c.innerHTML = '<span>' + esc(v) + '</span><span class="cx">×</span>';
+    c.querySelector('.cx').onclick = function() { card._sv = card._sv.filter(function(x) { return x !== v; }); renderChips(card); };
+    w.appendChild(c);
+  });
+}
+
+/* ── CONFIG ── */
+function collectFilters() {
+  var cards = [].slice.call(document.querySelectorAll('.fc'));
+  if (!cards.length) throw new Error('Добавьте хотя бы один фильтр.');
+  return cards.map(function(card) {
+    var ci = Number(card.querySelector('.fcol').value);
+    return {
+      columnIndex: ci,
+      columnName: meta.headers[ci] || '',
+      type: meta.columnTypes[ci] || 'text',
+      operator: card.querySelector('.fop').value,
+      value1: (card.querySelector('.fv1') && card.querySelector('.fv1').value) || '',
+      value2: (card.querySelector('.fv2') && card.querySelector('.fv2').value) || '',
+      selectedValues: [].concat(card._sv || []),
+      excludeBlanks: !!card.querySelector('.fexcl').checked
+    };
+  });
+}
+
+function getConfig() {
+  if (!meta) throw new Error('Сначала загрузите лист.');
+  return {
+    sheetName: document.getElementById('sheetSel').value,
+    combineMode: document.getElementById('combineMode').value,
+    archiveMode: document.getElementById('archiveMode').value,
+    pageSize: Number(document.getElementById('pageSize').value),
+    filters: collectFilters()
+  };
+}
+
+/* ── PREVIEW ── */
+function doPreview() {
+  try {
+    var cfg = getConfig();
+    ps.sz = cfg.pageSize; ps.aP = 1; ps.rP = 1;
+
+    tlog('', 'ti');
+    tlog('→ previewArchiveV31()', 'tinf');
+    tlog('  sheetName="' + cfg.sheetName + '" filters=' + cfg.filters.length + ' mode=' + cfg.archiveMode + ' combine=' + cfg.combineMode, 'ti');
+    if (!termOpen) toggleTerm();
+    termBusy(true);
+    setBtn('prevBtn', true);
+    setStatus('Выполняется предпросмотр...', 'info');
+
+    google.script.run
+      .withSuccessHandler(function(raw) {
+        try {
+          termBusy(false); setBtn('prevBtn', false);
+          tlog('← ответ получен, тип: ' + typeof raw, 'ti');
+          tlog('  ключи: ' + (raw ? Object.keys(raw).join(', ') : 'нет'), 'ti');
+
+          if (!raw || typeof raw !== 'object') {
+            tlog('✗ Ответ не является объектом: ' + JSON.stringify(raw), 'ter');
+            setStatus('Ошибка: неверный формат ответа', 'err'); return;
+          }
+
+          /* совместимость старого и нового формата */
+          var res, logText;
+          if (raw.headers !== undefined && raw.log === undefined) {
+            res = raw; logText = '';
+            tlog('! Старый формат ответа — обновите Code.js до v4.3', 'twrn');
+          } else {
+            res = raw; logText = raw.log || '';
+          }
+          tlogGAS(logText);
+
+          if (!res.headers) {
+            tlog('✗ Нет поля headers! Все ключи: ' + Object.keys(res).join(', '), 'ter');
+            setStatus('Ошибка: нет заголовков', 'err'); return;
+          }
+
+          tlog('  archiveCount=' + res.archiveCount + ' remainCount=' + res.remainCount, 'ti');
+
+          ps.aC = res.archiveCount || 0;
+          ps.rC = res.remainCount || 0;
+          ps.sz = res.pageSize || ps.sz;
+          ps.aP = 1; ps.rP = 1;
+
+          document.getElementById('archLbl').textContent = 'В архив: ' + ps.aC;
+          document.getElementById('remLbl').textContent = 'Остаётся: ' + ps.rC;
+
+          renderTable('archPrev', res.headers, res.archiveRows || [], 'archive');
+          renderTable('remPrev',  res.headers, res.remainRows  || [], 'remain');
+          updPager('archive'); updPager('remain');
+          if (view !== 'split') syncSingle(ps.sT);
+
+          document.getElementById('archBtn').disabled = ps.aC === 0;
+          setStatus('Готово. К архивации: ' + ps.aC + ', остаётся: ' + ps.rC + '.', 'ok');
+          tlog('✓ Предпросмотр готов', 'tok');
+        } catch(e) {
+          termBusy(false); setBtn('prevBtn', false);
+          tlog('✗ JS ошибка в previewHandler: ' + e.message, 'ter');
+          tlog('  Stack: ' + (e.stack || ''), 'ter');
+          setStatus('JS ошибка: ' + e.message, 'err');
+        }
+      })
+      .withFailureHandler(function(err) {
+        termBusy(false); setBtn('prevBtn', false);
+        var msg = errMsg(err);
+        tlog('✗ GAS ERROR previewArchive: ' + msg, 'ter');
+        setStatus('Ошибка GAS: ' + msg, 'err');
+      })
+      .previewArchiveV31(cfg);
+  } catch(e) {
+    setStatus(e.message, 'err');
+    tlog('✗ ' + e.message, 'ter');
+  }
+}
+
+function cpage(tgt, delta, isSingle) {
+  var pKey = tgt === 'archive' ? 'aP' : 'rP';
+  var cKey = tgt === 'archive' ? 'aC' : 'rC';
+  var tot = Math.max(1, Math.ceil(ps[cKey] / ps.sz));
+  var nxt = Math.max(1, Math.min(tot, ps[pKey] + delta));
+  if (nxt === ps[pKey]) return;
+  try {
+    var cfg = Object.assign({}, getConfig(), { target: tgt, page: nxt, pageSize: ps.sz });
+    tlog('→ getPreviewPageV31 target=' + tgt + ' page=' + nxt, 'tinf');
+    termBusy(true);
+    setStatus('Загрузка стр.' + nxt + '...', 'info');
+
+    google.script.run
+      .withSuccessHandler(function(raw) {
+        try {
+          termBusy(false);
+          var res, logText;
+          if (raw && raw.rows !== undefined && raw.log === undefined) {
+            res = raw; logText = '';
+          } else {
+            res = raw; logText = raw && raw.log || '';
+          }
+          tlogGAS(logText);
+          ps[pKey] = res.page;
+          renderTable(tgt === 'archive' ? 'archPrev' : 'remPrev', meta.headers, res.rows || [], tgt);
+          updPager(tgt);
+          if (isSingle || view === tgt) syncSingle(tgt);
+          setStatus('Стр.' + res.page + ' загружена.', 'ok');
+          tlog('✓ Страница загружена rows=' + (res.rows || []).length, 'tok');
+        } catch(e) {
+          termBusy(false);
+          tlog('✗ JS ошибка в pageHandler: ' + e.message, 'ter');
+          setStatus('JS ошибка: ' + e.message, 'err');
+        }
+      })
+      .withFailureHandler(function(err) {
+        termBusy(false);
+        tlog('✗ GAS ERROR getPreviewPage: ' + errMsg(err), 'ter');
+        setStatus('Ошибка: ' + errMsg(err), 'err');
+      })
+      .getPreviewPageV31(cfg);
+  } catch(e) { setStatus(e.message, 'err'); tlog('✗ ' + e.message, 'ter'); }
+}
+
+function renderTable(cid, headers, rows, bucket) {
+  var root = document.getElementById(cid);
+  if (!rows || !rows.length) {
+    root.innerHTML = '<div class="es"><div class="ei">' + (bucket === 'archive' ? '🗂' : '✅') + '</div><div class="em">Нет строк</div></div>';
+    return;
+  }
+  var rc = bucket === 'archive' ? 'ar' : 'rr';
+  var h = '<table><thead><tr><th class="rn">#</th>' +
+    headers.map(function(x) { return '<th>' + esc(x || '') + '</th>'; }).join('') +
+    '</tr></thead><tbody>';
+  rows.forEach(function(row) {
+    h += '<tr class="' + rc + '"><td class="rn">' + row.rowNumber + '</td>' +
+      row.cells.map(function(c) { var f = fmt(c); return '<td title="' + esc(f) + '">' + esc(f) + '</td>'; }).join('') +
+      '</tr>';
+  });
+  h += '</tbody></table>';
+  root.innerHTML = h;
+}
+
+function updPager(tgt) {
+  var p = tgt === 'archive' ? ps.aP : ps.rP;
+  var c = tgt === 'archive' ? ps.aC : ps.rC;
+  var tot = Math.max(1, Math.ceil(c / ps.sz));
+  if (tgt === 'archive') {
+    document.getElementById('aPI').textContent = p + ' / ' + tot;
+    document.getElementById('aPrev').disabled = p <= 1;
+    document.getElementById('aNext').disabled = p >= tot;
+  } else {
+    document.getElementById('rPI').textContent = p + ' / ' + tot;
+    document.getElementById('rPrev').disabled = p <= 1;
+    document.getElementById('rNext').disabled = p >= tot;
+  }
+}
+
+/* ── ARCHIVE ── */
+function doArchive() {
+  try {
+    var comment = (document.getElementById('archComment').value || '').trim();
+    var confirm = (document.getElementById('archConfirm').value || '').trim();
+    if (!comment) { setStatus('Комментарий обязателен.', 'err'); return; }
+    if (confirm !== 'ARCHIVE') { setStatus('Введите ARCHIVE.', 'err'); return; }
+    if (ps.aC === 0) { setStatus('Нет строк для архивации.', 'err'); return; }
+    if (!window.confirm('Будет архивировано ' + ps.aC + ' строк.\nОстанется ' + ps.rC + ' строк.\nПродолжить?')) return;
+
+    var cfg = Object.assign({}, getConfig(), { archiveComment: comment, archiveConfirm: confirm });
+    tlog('', 'ti');
+    tlog('→ performArchiveV31()', 'tinf');
+    if (!termOpen) toggleTerm();
+    termBusy(true); setBtn('archBtn', true);
+    setStatus('Выполняется архивация...', 'info');
+
+    google.script.run
+      .withSuccessHandler(function(raw) {
+        try {
+          termBusy(false); setBtn('archBtn', false);
+          var res = raw, logText = (raw && raw.log) || '';
+          tlogGAS(logText);
+          setStatus('✅ ' + res.message + ' | Лист: "' + res.archiveSheetName + '" | ID: ' + res.operationId, 'ok');
+          tlog('✓ Архивация завершена: ' + res.archivedCount + ' строк', 'tok');
+          document.getElementById('archConfirm').value = '';
+          loadMetadata(); resetPreview(false);
+        } catch(e) {
+          termBusy(false); setBtn('archBtn', false);
+          tlog('✗ JS ошибка в archiveHandler: ' + e.message, 'ter');
+          setStatus('JS ошибка: ' + e.message, 'err');
+        }
+      })
+      .withFailureHandler(function(err) {
+        termBusy(false); setBtn('archBtn', false);
+        tlog('✗ GAS ERROR performArchive: ' + errMsg(err), 'ter');
+        setStatus('Ошибка: ' + errMsg(err), 'err');
+      })
+      .performArchiveV31(cfg);
+  } catch(e) { setStatus(e.message, 'err'); tlog('✗ ' + e.message, 'ter'); }
+}
+
+/* ── RESET ── */
+function resetPreview(cls) {
+  ps.sz = Number(document.getElementById('pageSize').value || 50);
+  ps.aC = 0; ps.rC = 0; ps.aP = 1; ps.rP = 1;
+  document.getElementById('archLbl').textContent = 'В архив: 0';
+  document.getElementById('remLbl').textContent = 'Остаётся: 0';
+  ['archPrev','remPrev','singlePrev'].forEach(function(id) {
+    document.getElementById(id).innerHTML = '<div class="es"><div class="ei">🔍</div><div class="em">Нажмите «Предпросмотр»</div></div>';
+  });
+  ['aPrev','aNext','rPrev','rNext','sPrev','sNext'].forEach(function(id) {
+    document.getElementById(id).disabled = true;
+  });
+  document.getElementById('aPI').textContent = '1 / 1';
+  document.getElementById('rPI').textContent = '1 / 1';
+  document.getElementById('sPI').textContent = '1 / 1';
+  document.getElementById('archBtn').disabled = true;
+  if (cls !== false) clrStatus();
+}
+
+/* ── SAVE / APPLY ── */
+function saveFs() {
+  try {
+    var name = (document.getElementById('fsName').value || '').trim();
+    if (!name) { setStatus('Укажите название.', 'err'); return; }
+    var cfg = getConfig();
+    google.script.run
+      .withSuccessHandler(function(r) { tlogGAS(r && r.log); document.getElementById('fsName').value = ''; loadSaved(); setStatus('Набор "' + name + '" сохранён.', 'ok'); })
+      .withFailureHandler(function(e) { setStatus('Ошибка: ' + errMsg(e), 'err'); })
+      .saveFilterSetV31({ name: name, config: cfg });
+  } catch(e) { setStatus(e.message, 'err'); }
+}
+function saveTm() {
+  try {
+    var name = (document.getElementById('tmName').value || '').trim();
+    if (!name) { setStatus('Укажите название.', 'err'); return; }
+    var cfg = getConfig();
+    google.script.run
+      .withSuccessHandler(function(r) { tlogGAS(r && r.log); document.getElementById('tmName').value = ''; loadSaved(); setStatus('Шаблон "' + name + '" сохранён.', 'ok'); })
+      .withFailureHandler(function(e) { setStatus('Ошибка: ' + errMsg(e), 'err'); })
+      .saveArchiveTemplateV31({ name: name, config: cfg });
+  } catch(e) { setStatus(e.message, 'err'); }
+}
+
+function applyCfg(item) {
+  var cfg = item.config || item;
+  if (!cfg) return;
+  var sel = document.getElementById('sheetSel');
+  if (cfg.sheetName && [].slice.call(sel.options).some(function(o) { return o.value === cfg.sheetName; })) sel.value = cfg.sheetName;
+  google.script.run
+    .withSuccessHandler(function(raw) {
+      try {
+        var res = (raw && raw.sheetName) ? raw : raw;
+        tlogGAS(raw && raw.log);
+        meta = res;
+        document.getElementById('metaChip').style.display = 'block';
+        document.getElementById('mRows').textContent = res.totalRows;
+        document.getElementById('mCols').textContent = res.totalColumns;
+        document.getElementById('combineMode').value = cfg.combineMode || 'AND';
+        document.getElementById('archiveMode').value = cfg.archiveMode || 'MATCH';
+        document.getElementById('pageSize').value = String(cfg.pageSize || 50);
+        var fc = document.getElementById('fc'); fc.innerHTML = '';
+        (cfg.filters || []).forEach(function(f) { addFilter(f); });
+        if (!cfg.filters || !cfg.filters.length) addFilter();
+        resetPreview(false); setStatus('Конфигурация "' + item.name + '" применена.', 'ok');
+      } catch(e) { tlog('✗ JS ошибка applyCfg: ' + e.message, 'ter'); setStatus('JS ошибка: ' + e.message, 'err'); }
+    })
+    .withFailureHandler(function(e) { setStatus('Ошибка: ' + errMsg(e), 'err'); })
+    .getSheetMetadataV31(document.getElementById('sheetSel').value);
+}
+
+function renderSaved(cid, items, type) {
+  var root = document.getElementById(cid);
+  root.innerHTML = '';
+  if (!items || !items.length) {
+    root.innerHTML = '<div class="note" style="padding:6px 0">Нет сохранённых.</div>';
+    return;
+  }
+  items.forEach(function(item) {
+    var row = document.createElement('div'); row.className = 'si';
+    row.innerHTML = '<div class="sn" title="' + esc(item.name) + '">' + esc(item.name) + '</div>' +
+      '<button class="bgh bsm">Применить</button><button class="br bsm">×</button>';
+    row.querySelectorAll('button')[0].onclick = function() { applyCfg(item); };
+    row.querySelectorAll('button')[1].onclick = function() {
+      var fn = type === 'fs' ? 'deleteFilterSetV31' : 'deleteArchiveTemplateV31';
+      google.script.run
+        .withSuccessHandler(function(r) { tlogGAS(r && r.log); loadSaved(); setStatus('"' + item.name + '" удалён.', 'ok'); })
+        .withFailureHandler(function(e) { setStatus('Ошибка: ' + errMsg(e), 'err'); })[fn](item.name);
+    };
+    root.appendChild(row);
+  });
+}
+
+/* ── UTILS ── */
+function fmt(v) {
+  if (v === null || v === undefined) return '';
+  if (Object.prototype.toString.call(v) === '[object Date]' && !isNaN(v)) return v.toLocaleDateString('ru');
+  return String(v);
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+function errMsg(e) {
+  if (!e) return 'Неизвестная ошибка';
+  if (typeof e === 'string') return e;
+  if (e.message) return e.message;
+  return JSON.stringify(e);
+}
+function deb(fn, ms) {
+  var t;
+  return function() { var a = arguments; clearTimeout(t); t = setTimeout(function() { fn.apply(null, a); }, ms); };
+}
+</script>
+</body>
+</html>
