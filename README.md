@@ -3,8 +3,7 @@
 ### *Инструмент для умной фильтрации и безопасной архивации строк в Google Sheets*
 
 <p align="center">
-  <!-- ✅ ВСТАВЬ СВОЙ БАННЕР ЗДЕСЬ -->
-  [URL_ВАШЕГО_БАННЕРА](https://github.com/kutya001/---Google-Sheets/issues/1#issue-4175504625)
+  <img width="1915" height="1076" alt="Image" src="https://github.com/user-attachments/assets/8575082f-5eb0-4ed3-a68c-5ea424aaf37b" />
 </p>
 
 <p align="center">
