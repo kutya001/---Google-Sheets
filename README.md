@@ -189,5 +189,6 @@
 
 Обомне - [https://kutya001.github.io/KutEmpResume/](https://kutya001.github.io/KutEmpResume/)
 TELEGRAM - [https://t.me/kutya_omuraliev](https://t.me/kutya_omuraliev)
-INSTAGRAM - ![WhatsApp Image 2026-03-31 at 09 34 07](https://github.com/user-attachments/assets/712bd79a-2820-41c5-8b04-58909de481bc)
+INSTAGRAM - [![Uploading WhatsApp Image 2026-03-31 at 09.34.07.jpeg…]()](https://www.instagram.com/_omuraliev_kutman_?utm_source=qr&igsh=MTQ1N2RvZTVweHNhZA==)
+
 
