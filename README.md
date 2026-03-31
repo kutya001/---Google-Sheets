@@ -187,8 +187,8 @@
 
 # ❤️ Автор & поддержка
 
-* Обомне - [Обомне](https://kutya001.github.io/KutEmpResume/)
-* TELEGRAM - [TELEGRAM](https://t.me/kutya_omuraliev)
-* INSTAGRAM - [INSTAGRAM](https://www.instagram.com/_omuraliev_kutman_?utm_source=qr&igsh=MTQ1N2RvZTVweHNhZA==)
+* [Обомне](https://kutya001.github.io/KutEmpResume/)
+* [TELEGRAM](https://t.me/kutya_omuraliev)
+* [INSTAGRAM](https://www.instagram.com/_omuraliev_kutman_?utm_source=qr&igsh=MTQ1N2RvZTVweHNhZA==)
 
 
